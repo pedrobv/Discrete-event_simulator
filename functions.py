@@ -1,6 +1,5 @@
 import simpy
 import numpy as np
-#from misc import *
 
 class Cycle_time():
     def __init__(self, Env, Process, Model, Equipment):
@@ -20,10 +19,10 @@ class Cycle_time():
         
         if self.Process.Increase:
             self.Process.Qty += self.Model.Pcs_mod
-            M_time = (Travel / Speed) * self.Model.Pcs_mod + self.Equipment.Specific_h * R # Uniform distribution
+            M_time = (Travel / Speed) * self.Model.Pcs_mod + (self.Equipment.Specific_h_in + self.Equipment.Specific_h_out) * R # Uniform distribution
         else:
             self.Process.Qty += 1
-            M_time = (Travel / Speed) + self.Equipment.Specific_h * R # Uniform distribution
+            M_time = (Travel / Speed) + (self.Equipment.Specific_h_in + self.Equipment.Specific_h_out) * R # Uniform distribution
         
         T_time = P_time + M_time + S_time
         
@@ -35,10 +34,7 @@ class Cycle_time():
 
     def Previous(self):
         R = np.random.normal(1, 0.1)
-        if self.Process.Need_mod:
-            return (self.Equipment.Distance_p / 64.00 + self.Model.Hand_i + self.Model.Mod_time) * R
-        else:
-            return (self.Equipment.Distance_p / 64.00 + self.Model.Hand_i) * R
+        return (self.Equipment.Distance_p / 64.00 + self.Model.Hand_i) * R
 
     def Subsequent(self):
         R = np.random.normal(1, 0.1)
@@ -50,10 +46,7 @@ class Cycle_time():
 
     def Handling(self):
         R = np.random.normal(1, 0.1)
-        if self.Process.Need_mod:
-            return (self.Model.Hand_i + self.Model.Hand_o + self.Model.Mod_time) * R
-        else:
-            return (self.Model.Hand_i + self.Model.Hand_o) * R
+        return (self.Model.Hand_i + self.Model.Hand_o) * R
 
     def T_factor(self):
         if self.Process.Kind == "Perimeter":
@@ -62,6 +55,8 @@ class Cycle_time():
             return self.Model.Kc_long
         elif self.Process.Kind == "Unit":
             return 1
+        elif self.Process.Kind == "Wire":
+            return self.Model.Wire_long
 
     def S_factor(self):
         return (self.Equipment.Max_s - self.Equipment.Min_s)*np.random.normal(1, 0.1) + self.Equipment.Min_s # uniform distribution
@@ -156,7 +151,7 @@ class Schedule():
                 Mod += 1
                 self.Get(Line[0][0].Model.Area) # Removing material from SPD or PDLC rolls
                 yield self.Env.timeout(0.001)
-                Line[0][0].Put(["%s modular layer %s" % (Line[0][0].Model.Name, Mod), self.Env.now])
+                Line[0][0].Put(["%s base material %s" % (Line[0][0].Model.Name, Mod), self.Env.now])
                 for k, Cycle_time in enumerate(Line[0]):
                     if not k == len(Line[0]) - 1:
                         self.Env.process(self.Execute_line(Cycle_time, Line[0][k + 1], Mod))
