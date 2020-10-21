@@ -29,27 +29,28 @@ class Process():
 
 class Equipment():
     
-    def __init__(self, Name, Min_s, Max_s, Operators, Distance_p, Distance_n, Specific_h, Place):
+    def __init__(self, Name, Min_s, Max_s, Operators, Distance_p, Distance_n, Specific_h_in, Specific_h_out, Place):
         self.Name = Name
         self.Min_s = float(Min_s)
         self.Max_s = float(Max_s)
         self.Operators = int(Operators)
         self.Distance_p = float(Distance_p) # distance from the previous process
         self.Distance_n = float(Distance_n) # distance to the next process
-        self.Specific_h = float(Specific_h) # specific time to set the machine
+        self.Specific_h_in = float(Specific_h_in) # specific time to get the material inside the machine
+        self.Specific_h_out = float(Specific_h_out) # specific time to get the material out of the machine
         Place.Equipments.append(self)
         
         print("Equipment %s has been created!" % self.Name)
 
 class Model():
 
-    def __init__(self, Name, Perimeter, Area, Kc_long, Pcs_mod, Mod_time, Hand_i, Hand_o, Place):
+    def __init__(self, Name, Perimeter, Area, Kc_long, Wire_long, Pcs_mod, Hand_i, Hand_o, Place):
         self.Name = Name
         self.Perimeter = float(Perimeter)
         self.Area = float(Area)
         self.Kc_long = float(Kc_long)
         self.Pcs_mod = int(Pcs_mod)
-        self.Mod_time = float(Mod_time)
+        #self.Mod_time = float(Mod_time)
         self.Hand_i = float(Hand_i)
         self.Hand_o = float(Hand_o)
         Place.Models.append(self)
